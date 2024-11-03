@@ -1,7 +1,7 @@
 od kompanije je portebno uzeti svu racunarsku opremu i aplikaciju koju izrade. Sve sto se desava na kompijuterima tokom radnog vremena (kada je otvoren dan) se belezi 
 u bazi podataka koju kompanija preporuci i to obavlja u realnom vremenu.
 Pri pokretanju programa se unosi sifra: zaposlenog ili od sefa/menadzera i otvara se slikovit prikaz lokala i pozicija stolova koji su obelezeni brojevima i zelenom bojom.
-Taj prozor nema drugih funkcija osim odjave i mogucnosti da se klikne na neki od stolova da bi se unela porudzbina.
+Taj prozor nema drugih funkcija osim odjave i mogucnosti da se klikne na neki od stolova da bi se unela porudzbina i ima dugme za odjavu dole desno.
 Ulaskom na odabrani sto otvara se novi prozor gde sa leve strane vidimo istoriju artikala koju su gosti narucivali i njihovu cenu organizovano u listi, na donjem delu liste
 se nalazi ukupna cena, a na gornjem 5 tastera G1/2/3/4/5 koji su dodatne liste po stolu gde mozemo razdvojiti porudzbine. Klikom na dugme "Razdvajanje porudzbine" u gornjem
 desnom uglu ekrana otvara se prozor gde biramo koje cemo porudzbine da odvojimo i u koju listu.
