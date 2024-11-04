@@ -1,0 +1,48 @@
+Dan 1:
+
+Marko:Kreirana tema za projekat
+Katarina:/
+Bojan:/
+
+Dan 2:
+
+Marko:napisane tacke 1, 1.1, 1.2, 1.3
+Katarina:/
+Bojan:/
+
+Dan 3:
+
+Marko:napravljen uml dijagram
+Katarina:
+Bojan:
+
+Dan 4:
+
+Marko:
+Katarina:
+Bojan:
+
+Dan 5:
+
+Marko:
+Katarina:
+Bojan:
+
+Dan 6:
+
+Marko:
+Katarina:
+Bojan:
+
+Dan 7:
+
+Marko:
+Katarina:
+Bojan:
+
+Dan 8:
+
+Marko:
+Katarina:
+Bojan:
+
