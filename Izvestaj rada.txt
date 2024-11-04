@@ -6,15 +6,15 @@ Bojan:/
 
 Dan 2:
 
-Marko:napisane tacke 1, 1.1, 1.2, 1.3
+Marko:napisane tacke 1, 1.1
 Katarina:/
 Bojan:/
 
 Dan 3:
 
-Marko:napravljen uml dijagram
+Marko:napravljen uml dijagram 
 Katarina:
-Bojan:
+Bojan:napisane tacke 1.2, 1.3, 1.4, napravljen uml dijagram tacke 1.3.2
 
 Dan 4:
 
