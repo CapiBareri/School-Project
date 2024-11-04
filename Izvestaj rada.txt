@@ -13,7 +13,7 @@ Bojan:/
 Dan 3:
 
 Marko:napravljen uml dijagram 
-Katarina:
+Katarina: Napisane tačke od 3 do 3.8
 Bojan:napisane tacke 1.2, 1.3, 1.4, napravljen uml dijagram tacke 1.3.2
 
 Dan 4:
