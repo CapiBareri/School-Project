@@ -25,8 +25,8 @@ Bojan:napisane tacke 4. - 4.8
 Dan 5:
 
 Marko:/
-Katarina:
-Bojan:stilizacija oko funkcionalnog zahteva
+Katarina:Predlog resenja
+Bojan:stilizacija oko funkcionalnog zahteva i predlog resenja
 
 Dan 6:
 
