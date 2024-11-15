@@ -30,15 +30,15 @@ Bojan:stilizacija oko funkcionalnog zahteva i predlog resenja
 
 Dan 6:
 
-Marko:
-Katarina:
-Bojan:
+Marko:1. - 3.
+Katarina:funkcionalni zahtev 3. - 5.
+Bojan:uml 1. idf0 i ssa
 
 Dan 7:
 
 Marko:
 Katarina:
-Bojan:
+Bojan:promena idf0 i prepravke oko ssa
 
 Dan 8:
 
