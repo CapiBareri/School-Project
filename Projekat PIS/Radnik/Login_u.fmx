@@ -9,22 +9,23 @@ object Form2: TForm2
   FormFactor.Devices = [Desktop]
   DesignerMasterStyle = 0
   object Label1: TLabel
-    Position.X = 216.000000000000000000
-    Position.Y = 136.000000000000000000
-    Text = 'Label1'
+    Position.X = 208.000000000000000000
+    Position.Y = 152.000000000000000000
+    Text = 'Enter the password:'
     TabOrder = 0
   end
   object Edit1: TEdit
     Touch.InteractiveGestures = [LongTap, DoubleTap]
     TabOrder = 1
+    Password = True
     Position.X = 216.000000000000000000
     Position.Y = 200.000000000000000000
   end
   object btnLogin: TButton
-    Position.X = 216.000000000000000000
+    Position.X = 224.000000000000000000
     Position.Y = 272.000000000000000000
     TabOrder = 2
-    Text = 'btnLogin'
+    Text = 'Login'
     TextSettings.Trimming = None
     OnClick = btnLoginClick
   end

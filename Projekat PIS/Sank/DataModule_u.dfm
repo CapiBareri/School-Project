@@ -8,11 +8,14 @@ object DataModule1: TDataModule1
         'Database=C:\Other programs\Programming\DB files\Databases\cafeba' +
         'r.db'
       'DriverID=SQLite')
+    Connected = True
     Left = 56
     Top = 40
   end
   object FDQuery1: TFDQuery
     Connection = FDConnection1
+    SQL.Strings = (
+      'DELETE from shift')
     Left = 136
     Top = 40
   end

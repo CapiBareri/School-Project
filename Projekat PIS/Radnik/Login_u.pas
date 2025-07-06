@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
-  FMX.Edit, FMX.Controls.Presentation, Radnik_u, DataModule_u;
+  FMX.Edit, FMX.Controls.Presentation, Radnik_u, DataModule_u, System.JSON;
 
 type
   TForm2 = class(TForm)
@@ -16,7 +16,7 @@ type
   private
     { Private declarations }
   public
-    { Public declarations }
+    procedure HandleLoginResponse(JsonObj: TJSONObject);
   end;
 
 var
@@ -30,32 +30,49 @@ implementation
 procedure TForm2.btnLoginClick(Sender: TObject);
 var
   Password: Integer;
-  ReceivedWorkerID: Integer;
+  JsonObj: TJSONObject;
 begin
   if not TryStrToInt(Trim(Edit1.Text), Password) then
   begin
     ShowMessage('Please enter a valid numeric password.');
     Exit;
   end;
-
   if not DataModule1.IdTCPClient1.Connected then
     DataModule1.StartClientConnection;
 
-  DataModule1.IdTCPClient1.IOHandler.Write(Int32(Password));
+    JsonObj := TJSONObject.Create;
+    try
+      JsonObj.AddPair('type', 'login');
+      JsonObj.AddPair('password', TJSONNumber.Create(Password));
 
-  ReceivedWorkerID := DataModule1.IdTCPClient1.IOHandler.ReadInt32;
+      DataModule1.SendMessageToServer(JsonObj.ToString);
+      ShowMessage('Message sent');
+    finally
+      JsonObj.Free;
+    end;
 
-  if ReceivedWorkerID <> -1 then
-  begin
-    ShowMessage('Login successful! Worker ID: ' + IntToStr(ReceivedWorkerID));
-    MainForm := TMainForm.Create(Self);
-    MainForm.Show;
-    Form2.Hide;
-  end
-  else
-  begin
-    ShowMessage('Login failed: Worker not found.');
-  end;
+end;
+
+procedure TForm2.HandleLoginResponse(JsonObj: TJSONObject);
+var
+WorkerID, ShiftID: Integer;
+begin
+    WorkerID := JsonObj.GetValue<Integer>('worker_id');
+    ShiftID := JsonObj.GetValue<Integer>('shift_id');
+
+    if WorkerID <> -1 then
+    begin
+      ShowMessage('Login successful! Worker ID: ' + IntToStr(WorkerID));
+      MainForm := TMainForm.Create(nil);
+      MainForm.WorkerID := WorkerID;
+      MainForm.ShiftID := ShiftID;
+      MainForm.Show;
+      Form2.Free;
+    end
+    else
+    begin
+      ShowMessage('Login failed: Worker not found.');
+    end;
 end;
 
 end.

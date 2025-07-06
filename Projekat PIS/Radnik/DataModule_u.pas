@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, IdBaseComponent, IdComponent,
-  IdTCPConnection, IdTCPClient, System.Threading, FMX.Dialogs;
+  IdTCPConnection, IdTCPClient, System.Threading, FMX.Dialogs, System.JSON;
 
 type
 
@@ -19,10 +19,10 @@ TListenThread = class(TThread)
 
   TDataModule1 = class(TDataModule)
     IdTCPClient1: TIdTCPClient;
-    procedure StartClientConnection;
   private
     ListenThread: TListenThread;
   public
+    procedure StartClientConnection;
     procedure SendMessageToServer(const Msg: string);
   end;
 
@@ -35,6 +35,9 @@ implementation
 
 {$R *.dfm}
 
+uses
+Login_u;
+
 constructor TListenThread.Create(AClient: TIdTCPClient);
 begin
   inherited Create(False);
@@ -44,37 +47,56 @@ end;
 
 procedure TListenThread.Execute;
 var
-  Msg: string;
+  Msg, MsgType: string;
+  JSONObj: TJSONObject;
 begin
   while not Terminated do
   begin
     try
       Msg := FClient.IOHandler.ReadLn;
 
+      JSONObj := TJSONObject.ParseJSONValue(Msg) as TJSONObject;
+      if Assigned(JSONObj) then
+      begin
+      MsgType := JSONObj.GetValue<string>('type');
+
       TThread.Synchronize(nil,
         procedure
         begin
-          // Handle message from server here (example: show message)
-          ShowMessage('Received from server: ' + Msg);
+        if MsgType = 'login' then
+            Form2.HandleLoginResponse(JSONObj)
+            else if MsgType = 'order_status' then
+            begin
+              ShowMessage('Order received successfully!');
+            end;
         end);
+        JSONObj.Free;
+      end;
     except
       on E: Exception do
-      begin
-        ShowMessage('Lost connection with the server, error msg: ' + E.Message);
-        Break;
-      end;
+       begin
+        TThread.Synchronize(nil,
+          procedure
+          begin
+            ShowMessage('Lost connection: ' + E.Message);
+          end);
+         Break;
     end;
   end;
+end;
 end;
 
 procedure TDataModule1.StartClientConnection;
 begin
   try
-    IdTCPClient1.Host := 'localhost';
-    IdTCPClient1.Port := 6000;
-    IdTCPClient1.Connect;
+    if not IdTCPClient1.Connected then
+    begin
+      IdTCPClient1.Host := 'localhost';
+      IdTCPClient1.Port := 6000;
+      IdTCPClient1.Connect;
 
-    //ListenThread := TListenThread.Create(IdTCPClient1);
+      ListenThread := TListenThread.Create(IdTCPClient1);
+    end;
   except
     on E: Exception do
       ShowMessage('Failed to connect: ' + E.Message);

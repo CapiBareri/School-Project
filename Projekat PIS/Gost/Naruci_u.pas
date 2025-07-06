@@ -39,15 +39,28 @@ Gost_u;
 procedure TForm2.btnDomacaClick(Sender: TObject);
 var
   NewItemName: string;
-  NewQty: Integer;
+  NewQty, Price: Integer;
+  ExistingParts: TArray<string>;
+  ExistingQty, ExistingPrice: Integer;
 begin
   NewItemName := 'Domaca';
   NewQty := 1;
+  Price := 120;
 
-  FItems.Values[NewItemName] := IntToStr(NewQty);
+  if FItems.IndexOfName(NewItemName) <> -1 then
+  begin
+    ExistingParts := FItems.Values[NewItemName].Split([',']);
+    if Length(ExistingParts) = 2 then
+    begin
+      ExistingQty := StrToIntDef(ExistingParts[0], 0);
+      ExistingPrice := StrToIntDef(ExistingParts[1], 0);
+      NewQty := ExistingQty + NewQty;
+      Price := ExistingPrice + Price;
+    end;
+  end;
 
+  FItems.Values[NewItemName] := IntToStr(NewQty) + ',' + IntToStr(Price);
   AddItemsDisplay;
-
 end;
 
 procedure TForm2.btnNaruciClick(Sender: TObject);
@@ -66,10 +79,16 @@ end;
 
 procedure TForm2.AddItemsDisplay;
 var
-i: Integer;
+  i: Integer;
+  Parts: TArray<string>;
 begin
-for i := 0 to FItems.Count - 1 do
-    listBoxItems.Items.Add(FItems.Names[i] + ': ' + FItems.ValueFromIndex[i])
+  listBoxItems.Clear;
+  for i := 0 to FItems.Count - 1 do
+  begin
+    Parts := FItems.ValueFromIndex[i].Split([',']);
+    if Length(Parts) = 2 then
+      listBoxItems.Items.Add(FItems.Names[i] + ' x ' + Parts[0] + '     ' + Parts[1] + ' RSD');
+  end;
 end;
 
 procedure TForm2.SendItems;
@@ -78,16 +97,23 @@ var
   ItemsArray: TJSONArray;
   ItemObj: TJSONObject;
   i: Integer;
+  Parts: TArray<string>;
 begin
   JSONObject := TJSONObject.Create;
   ItemsArray := TJSONArray.Create;
   try
     JSONObject.AddPair('type', 'order');
+    JSONObject.AddPair('table', Form1.TableNum);
     for i := 0 to FItems.Count - 1 do
     begin
+      Parts := FItems.ValueFromIndex[i].Split([',']);
+      if Length(Parts) < 2 then
+        Continue;
+
       ItemObj := TJSONObject.Create;
       ItemObj.AddPair('name', FItems.Names[i]);
-      ItemObj.AddPair('quantity', TJSONNumber.Create(StrToInt(FItems.ValueFromIndex[i])));
+      ItemObj.AddPair('quantity', TJSONNumber.Create(StrToIntDef(Parts[0], 0)));
+      ItemObj.AddPair('price', TJSONNumber.Create(StrToIntDef(Parts[1], 0)));
       ItemsArray.Add(ItemObj);
     end;
     JSONObject.AddPair('items', ItemsArray);

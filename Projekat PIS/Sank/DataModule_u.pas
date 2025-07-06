@@ -10,7 +10,7 @@ uses
   FireDAC.Phys.SQLiteWrapper.Stat, FireDAC.FMXUI.Wait, FireDAC.Stan.Param,
   FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt, Data.DB, FireDAC.Comp.DataSet,
   FireDAC.Comp.Client, IdBaseComponent, IdComponent, IdCustomTCPServer,
-  IdTCPServer, IdContext, FMX.Dialogs;
+  IdTCPServer, IdContext, FMX.Dialogs, System.JSON;
 
 type
   TDataModule1 = class(TDataModule)
@@ -19,6 +19,8 @@ type
     IdTCPServer1: TIdTCPServer;
     procedure IdTCPServer1Execute(AContext: TIdContext);
     procedure DataModuleCreate(Sender: TObject);
+    procedure WorkerLogin(AContext: TIdContext; const JSON: TJSONObject);
+    procedure WorkerLogout(AContext: TIdContext; const JSON: TJSONObject);
   private
     { Private declarations }
   public
@@ -42,33 +44,101 @@ end;
 
 procedure TDataModule1.IdTCPServer1Execute(AContext: TIdContext);
 var
-  Password: Integer;
-  UserID: Integer;
+  JsonStr: string;
+  JsonObj: TJSONObject;
+  CommandType: string;
 begin
-  UserID := -1;
 
+  JsonStr := AContext.Connection.IOHandler.ReadLn;
+  JsonObj := TJSONObject.ParseJSONValue(JsonStr) as TJSONObject;
+  CommandType := JsonObj.GetValue<string>('type');
+
+  if CommandType = 'login' then
+    WorkerLogin(AContext, JsonObj)
+  else if CommandType = 'logout' then
+    WorkerLogout(AContext, JsonObj)
+end;
+
+procedure TDataModule1.WorkerLogin(AContext: TIdContext; const JSON: TJSONObject);
+var
+  Password, WorkerID, ShiftID: Integer;
+  Query: TFDQuery;
+  JsonObj: TJSONObject;
+begin
+  Query := TFDQuery.Create(nil);
+  JsonObj := TJSONObject.Create;
   try
-    Password := AContext.Connection.IOHandler.ReadInt32;
+    Query.Connection := FDConnection1;
+    Password := JSON.GetValue<Integer>('password');
 
-    TThread.Synchronize(nil, procedure
-    begin
-      FDQuery1.Close;
-      FDQuery1.SQL.Text := 'SELECT worker_id FROM worker WHERE password = :pwd';
-      FDQuery1.ParamByName('pwd').AsInteger := Password;
-      FDQuery1.Open;
+      Query.Close;
+      Query.SQL.Text := 'SELECT worker_id FROM worker WHERE password = :pwd';
+      Query.ParamByName('pwd').AsInteger := Password;
+      Query.Open;
 
-      if not FDQuery1.IsEmpty then
-        UserID := FDQuery1.FieldByName('worker_id').AsInteger;
-    end);
+       if Query.IsEmpty then
+      begin
+        JsonObj.AddPair('worker_id', -1);
+        Exit;
+      end;
 
-    AContext.Connection.IOHandler.Write(Int32(UserID));
+    WorkerID := Query.FieldByName('worker_id').AsInteger;
+    Query.Close;
 
-  except
-    on E: Exception do
-    begin
-      AContext.Connection.IOHandler.Write(Int32(-1));
-    end;
+    Query.SQL.Text := 'INSERT INTO shift (worker_id, shift_start, shift_end, total_cash, total_card, total) ' +
+                      'VALUES (:wid, :start, NULL, 0, 0, 0)';
+    Query.ParamByName('wid').AsInteger := WorkerID;
+    Query.ParamByName('start').AsDateTime := Now;
+    Query.ExecSQL;
+
+    Query.SQL.Text := 'SELECT last_insert_rowid() AS shift_id';
+    Query.Open;
+
+    ShiftID := Query.FieldByName('shift_id').AsInteger;
+    JsonObj.AddPair('type', 'login');
+    JsonObj.AddPair('worker_id', WorkerID);
+    JsonObj.AddPair('shift_id', ShiftID);
+    AContext.Connection.IOHandler.WriteLn(JsonObj.ToString);
+
+  finally
+    Query.Free;
   end;
+end;
+
+procedure TDataModule1.WorkerLogout(AContext: TIdContext; const JSON: TJSONObject);
+var
+Query: TFDQuery;
+WorkerID, ShiftID, TotalCash, TotalCard, Total: Integer;
+begin
+Query := TFDQuery.Create(nil);
+ try
+   Query.Connection := FDConnection1;
+
+   ShiftID := JSON.GetValue<Integer>('shift_id');
+   WorkerID := JSON.GetValue<Integer>('worker_id');
+   TotalCash := JSON.GetValue<Integer>('total_cash');
+   TotalCard := JSON.GetValue<Integer>('total_card');
+   Total := JSON.GetValue<Integer>('total');
+
+   Query.SQL.Text :=
+      'UPDATE shift ' +
+      'SET shift_end = :end_time, ' +
+      '    total_cash = :cash, ' +
+      '    total_card = :card, ' +
+      '    total = :total ' +
+      'WHERE shift_id = :sid AND worker_id = :wid';
+
+    Query.ParamByName('end_time').AsDateTime := Now;
+    Query.ParamByName('cash').AsInteger := TotalCash;
+    Query.ParamByName('card').AsInteger := TotalCard;
+    Query.ParamByName('total').AsInteger := Total;
+    Query.ParamByName('sid').AsInteger := ShiftID;
+    Query.ParamByName('wid').AsInteger := WorkerID;
+
+    Query.ExecSQL;
+ finally
+   Query.Free;
+ end;
 end;
 
 end.
